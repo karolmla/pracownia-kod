@@ -1,6 +1,6 @@
 /*
   Pracownia Fotoksiążki — pełny kod (menu + Ramki - Fotoksiążka, Okładka - Fotoksiążka, Odbitki, Generator obrazów z Generatorem przykładów).
-  Wersja: 22.10.2026 (75)
+  Wersja: 25.10.2026 (76)
   Ten plik leży na GitHubie i wczytuje go mały starter wklejony do Gemini Canvas.
   Po aktualizacji wystarczy podmienić ten plik — kodu w Canvas nie trzeba ruszać.
 */
@@ -14,7 +14,7 @@ var vp=d.querySelector('meta[name=viewport]');
 if(!vp){vp=d.createElement('meta');vp.name='viewport';d.head.appendChild(vp);}
 vp.content='width=device-width, initial-scale=1, viewport-fit=cover';
 var st=d.createElement('style');st.id='pracownia-styl';st.textContent=":root{\n  --paper:#EEEFEA;--paper-deep:#E3E5DC;--ink:#1C201B;--ink-soft:#59635B;\n  --safelight:#C1401F;--safelight-deep:#9A3216;--tungsten:#E3A23E;--steel:#48534C;\n  --steel-line:rgba(72,83,76,.25);--good:#3F7A52;--white:#FFFFFF;\n  --font-display:'Fraunces',Georgia,serif;\n  --font-ui:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;\n  --bar-h:56px;--top:env(safe-area-inset-top,0px);\n}\n*,*::before,*::after{box-sizing:border-box}\nhtml,body{margin:0;height:100%}\nbody{background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--font-ui);-webkit-font-smoothing:antialiased;overflow:hidden}\nbody::before{content:\"\";position:fixed;inset:0;pointer-events:none;opacity:.05;z-index:0;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E\")}\nbutton{font:inherit;color:inherit}\n:focus-visible{outline:3px solid rgba(193,64,31,.5);outline-offset:2px}\n\n/* ---------- pasek pracowni ---------- */\n.hub-bar{position:fixed;left:0;right:0;top:0;z-index:20;height:calc(var(--bar-h) + var(--top));padding:var(--top) max(10px,env(safe-area-inset-right)) 0 max(10px,env(safe-area-inset-left));background:var(--ink);color:#fff;display:flex;align-items:center;gap:8px}\n.home{display:flex;align-items:center;gap:9px;background:none;border:0;padding:8px 6px;border-radius:8px;cursor:pointer;flex:none}\n.home:hover{background:rgba(255,255,255,.08)}\n.mark{width:22px;height:22px;border-radius:50%;border:2px solid #fff;position:relative;flex:none}\n.mark::after{content:\"\";position:absolute;inset:5px;border-radius:50%;background:var(--safelight)}\n.home b{font:600 17px/1 var(--font-display);letter-spacing:.005em;white-space:nowrap}\n.switch{display:flex;gap:4px;margin:0 auto;background:rgba(255,255,255,.07);padding:4px;border-radius:10px;min-width:0}\n.switch button{position:relative;display:flex;align-items:center;gap:6px;border:0;background:none;padding:7px 12px;border-radius:7px;cursor:pointer;font-weight:600;font-size:14px;color:rgba(255,255,255,.72);white-space:nowrap}\n.switch button:hover{color:#fff}\n.switch button[aria-current=\"page\"]{background:var(--paper);color:var(--ink)}\n.switch .pct{font-size:12px;font-weight:700;color:var(--tungsten);font-variant-numeric:tabular-nums}\n.switch button[aria-current=\"page\"] .pct{color:var(--safelight-deep)}\n.switch .pct:empty{display:none}\n.tools{display:flex;gap:4px;flex:none}\n.tool{width:40px;height:40px;display:grid;place-items:center;border:0;background:none;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.55)}\n.tool:hover{background:rgba(255,255,255,.08)}\n.tool[aria-pressed=\"true\"]{color:var(--tungsten)}\n#filesBtn{color:#fff}\n.tool svg{width:22px;height:22px}\n.hub-prog{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.08);opacity:0;transition:opacity .3s}\n.hub-prog.on{opacity:1}\n.hub-prog i{display:block;height:100%;width:0;background:var(--safelight);box-shadow:0 0 10px 1px rgba(193,64,31,.8);transition:width .35s}\n.hub-prog.est i{background:linear-gradient(90deg,var(--safelight),var(--tungsten))}\nbody.in-menu .switch{visibility:hidden}\n\n/* ---------- menu ---------- */\n.menu{position:fixed;inset:calc(var(--bar-h) + var(--top)) 0 0 0;overflow:auto;-webkit-overflow-scrolling:touch;z-index:1}\n.menu-in{max-width:1080px;margin:0 auto;padding:40px max(20px,env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}\n.intro{max-width:620px;margin-bottom:30px}\n.intro h1{font:600 clamp(34px,6vw,54px)/1.04 var(--font-display);margin:0 0 14px;letter-spacing:-.015em}\n.intro p{margin:0;font-size:17px;color:var(--ink-soft);max-width:34em}\n.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}\n.card{background:var(--white);border:1px solid var(--steel-line);border-radius:13px;overflow:hidden;display:flex;flex-direction:column}\n.art{display:block;line-height:0;border-bottom:1px solid var(--steel-line)}\n.art svg,.art img{width:100%;height:auto;display:block}.art img{aspect-ratio:11/4;object-fit:cover}\n.card-body{padding:20px 20px 22px;display:flex;flex-direction:column;gap:10px;flex:1}\n.card h2{font:600 27px/1.1 var(--font-display);margin:0}\n.card p{margin:0;color:var(--ink-soft);font-size:15px;line-height:1.55}\n.card .out{font-size:13.5px;color:var(--steel);border-top:1px dashed var(--steel-line);padding-top:10px;margin-top:auto}\n.card .out b{color:var(--ink);font-weight:600}\n.open{margin-top:6px;display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;border:0;border-radius:8px;background:var(--safelight);color:#fff;font-weight:600;font-size:16px;cursor:pointer}\n.open:hover{background:var(--safelight-deep)}\n.state{display:none;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--safelight-deep)}\n.state.on{display:flex}\n.state::before{content:\"\";width:8px;height:8px;border-radius:50%;background:currentColor}\n.state.busy::before{animation:pulse 1s infinite}\n.state.idle{color:var(--good)}\n@keyframes pulse{50%{opacity:.25}}\n.care{margin-top:34px;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px 22px;padding:18px 20px;border-radius:13px;background:var(--paper-deep)}\n.opt{display:flex;align-items:flex-start;gap:12px;background:none;border:0;text-align:left;padding:4px 0;cursor:pointer}\n.sw{flex:none;width:42px;height:24px;border-radius:99px;background:#b9bdb4;position:relative;margin-top:2px;transition:background .2s}\n.sw::after{content:\"\";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s}\n.opt[aria-pressed=\"true\"] .sw{background:var(--good)}\n.opt[aria-pressed=\"true\"] .sw::after{transform:translateX(18px)}\n.opt b{display:block;font-weight:600;font-size:15px}\n.opt small{display:block;color:var(--ink-soft);font-size:13.5px;line-height:1.45}\n.linkbtn{background:none;border:0;padding:0;color:var(--safelight-deep);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;justify-self:start;align-self:center}\n\n/* ---------- aplikacje ---------- */\n.stage{position:fixed;inset:calc(var(--bar-h) + var(--top)) 0 0 0;z-index:2;background:var(--paper);visibility:hidden}\n.stage.on{visibility:visible}\n.stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--paper);visibility:hidden}\n.stage iframe.on{visibility:visible}\n.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-soft);font-weight:600}\n\n.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,16px);opacity:0;pointer-events:none;z-index:40;background:var(--ink);color:#fff;padding:11px 16px;border-radius:10px;font-size:14.5px;font-weight:500;max-width:calc(100% - 28px);box-shadow:0 10px 30px rgba(0,0,0,.25);transition:opacity .25s,transform .25s}\n.toast.show{opacity:1;transform:translate(-50%,0)}\n.nosleep{position:fixed;left:0;bottom:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1}\n\n/* ---------- pliki: pobierz / udostępnij / wyślij ---------- */\n.tool{position:relative}\n.badge{position:absolute;top:3px;right:2px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--safelight);color:#fff;font:700 11px/17px var(--font-ui);text-align:center}\n.badge:empty{display:none}\n.sheet{position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(28,32,27,.45)}\n.sheet.show{display:flex}\n.sheet-card{width:100%;max-width:640px;max-height:88dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--paper);border-radius:16px 16px 0 0;padding:18px max(18px,env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));box-shadow:0 -12px 40px rgba(0,0,0,.25)}\n@media (min-width:700px){.sheet{align-items:center}.sheet-card{border-radius:16px}}\n.sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}\n.sheet-head h2{font:600 24px/1.15 var(--font-display);margin:0;flex:1}\n.x{width:44px;height:44px;border:0;background:none;border-radius:8px;cursor:pointer;font-size:26px;line-height:1;color:var(--ink-soft)}\n.x:hover{background:var(--paper-deep)}\n.sheet-lead{margin:0 0 14px;color:var(--ink-soft);font-size:14.5px}\n.fa.all{display:none;width:100%;margin:0 0 14px}\n.fa.all.on{display:flex}\n[hidden]{display:none!important}\n.frow{background:var(--white);border:1px solid var(--steel-line);border-radius:12px;padding:12px;margin-bottom:12px}\n.frow.new{border-color:var(--safelight);box-shadow:0 0 0 1px var(--safelight)}\n.fmeta{display:flex;align-items:center;gap:12px;margin-bottom:12px;min-width:0}\n.fthumb{flex:none;width:52px;height:52px;border-radius:8px;background:var(--paper-deep) center/cover no-repeat;display:grid;place-items:center;font:700 12px/1 var(--font-ui);color:var(--steel);letter-spacing:.04em}\n.fname{min-width:0;flex:1}\n.fname b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.fname small{color:var(--ink-soft);font-size:13px}\n.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}\n@media (max-width:520px){.facts{grid-template-columns:1fr 1fr}}\n.fa{min-height:46px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--steel-line);background:var(--paper);border-radius:9px;cursor:pointer;font-weight:600;font-size:14px;color:var(--ink);padding:6px 8px;text-align:center}\n.fa:hover{border-color:var(--steel)}\n.fa.pri{background:var(--safelight);border-color:var(--safelight);color:#fff}\n.fa.pri:hover{background:var(--safelight-deep)}\n.fa svg{width:18px;height:18px;flex:none}\n.fa:disabled{opacity:.45;cursor:not-allowed}\n.fnote{margin:10px 2px 0;font-size:13.5px;color:var(--ink-soft)}\n.fnote:empty{display:none}\n.fnote.err{color:var(--safelight-deep)}\n.fnote.ok{color:var(--good)}\n.linkbox{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}\n.linkbox input{flex:1 1 200px;min-width:0;height:42px;border:1px solid var(--steel-line);border-radius:8px;padding:0 10px;font:13.5px var(--font-ui);background:var(--white);color:var(--ink)}\n.linkbox .fa{flex:1 1 auto;min-height:42px}\n.upbar{height:6px;border-radius:3px;background:var(--paper-deep);margin-top:10px;overflow:hidden;display:none}\n.upbar.on{display:block}\n.upbar i{display:block;height:100%;width:0;background:var(--safelight);transition:width .2s}\n.nofiles{padding:20px 4px;color:var(--ink-soft);text-align:center}\n.srv{margin-top:22px;padding:18px 20px;border-radius:13px;background:var(--white);border:1px solid var(--steel-line)}\n.srv h3{font:600 20px/1.2 var(--font-display);margin:0 0 4px}\n.srv p{margin:0 0 14px;color:var(--ink-soft);font-size:14px}\n.srv-grid{display:grid;grid-template-columns:2fr 1fr;gap:12px}\n@media (max-width:640px){.srv-grid{grid-template-columns:1fr}}\n.srv label{display:block;font-size:13.5px;font-weight:600;margin-bottom:5px}\n.srv input{width:100%;height:46px;border:1px solid var(--steel-line);border-radius:8px;padding:0 12px;font:15px var(--font-ui);background:var(--paper);color:var(--ink)}\n.srv .full{grid-column:1/-1}\n.srv-actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}\n.srv-actions .fa{min-width:120px}\n.srv-state{margin:12px 0 0;font-size:14px;color:var(--ink-soft)}\n.ver{margin:26px 0 0;font-size:13px;color:var(--ink-soft);text-align:center}\n.srv-state.ok{color:var(--good);font-weight:600}\n.srv-state.err{color:var(--safelight-deep);font-weight:600}\n.seg{display:inline-flex;gap:4px;padding:4px;border-radius:10px;background:var(--paper-deep);margin:0 0 14px}\n.seg button{border:0;background:none;padding:9px 14px;border-radius:7px;font-weight:600;font-size:14.5px;cursor:pointer;color:var(--ink-soft)}\n.seg button[aria-checked=\"true\"]{background:var(--white);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}\n.opt.auto{margin-top:14px}\n.facts.n1{grid-template-columns:1fr}.facts.n2{grid-template-columns:1fr 1fr}.facts.n3{grid-template-columns:repeat(3,1fr)}\n@media (max-width:520px){.facts.n3{grid-template-columns:1fr 1fr}}\na.fa{text-decoration:none}\n\n@media (max-width:640px){\n  :root{--bar-h:54px}\n  .home b{display:none}\n  .switch button{padding:7px 9px;font-size:13.5px}\n  body.in-menu .home b{display:inline}\n  .menu-in{padding-top:28px}\n  .intro p{font-size:16px}\n}\n@media (max-width:640px){.tool{width:36px}.switch button{padding:7px 8px}}\n@media (max-width:430px){#wakeBtn{display:none}}\n@media (max-width:370px){.switch button{padding:7px 6px;font-size:12.5px}.tool{width:34px}}\n/* ---------- 4 aplikacje: kafelki 2×2 i przełącznik, który mieści się na telefonie ---------- */\n@media (min-width:600px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}\n@media (min-width:1500px){.menu-in{max-width:1460px}.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}\n.switch{overflow-x:auto;scrollbar-width:none}\n.switch::-webkit-scrollbar{display:none}\n.switch button{flex:none}\n.switch button:focus-visible{outline-offset:-3px}\n@media (max-width:640px){\n  .hub-bar{gap:4px;padding-left:max(6px,env(safe-area-inset-left));padding-right:max(6px,env(safe-area-inset-right))}\n  .home{padding:8px 4px}\n  .tools{gap:0}\n  .switch button{flex-direction:column;justify-content:center;gap:1px;line-height:1.15}\n  .switch .pct{font-size:10.5px;line-height:1}\n}\n@media (max-width:430px){.switch{gap:2px;padding:3px}.switch button{padding:7px 6px;font-size:13px}}\n@media (max-width:400px){.switch button{padding:7px 5px;font-size:12.5px}}\n@media (max-width:370px){.switch button{padding:7px 4px;font-size:12px}}\n/* narzędzie pomocnicze na kafelku (Generator przykładów pod Generatorem obrazów) */\n.card .sub{border-top:1px dashed var(--steel-line);margin-top:4px;padding-top:12px;display:flex;flex-direction:column;gap:8px}\n.subopen{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--paper);border:1px solid var(--steel-line);border-radius:9px;padding:10px 12px;cursor:pointer;color:var(--ink)}\n.subopen:hover{border-color:var(--steel)}\n.subopen svg{width:22px;height:22px;flex:none;color:var(--safelight-deep)}\n.subopen b{display:block;font-weight:600;font-size:15px}\n.subopen small{display:block;color:var(--ink-soft);font-size:13px;line-height:1.4}\n/* ---------- panel „Gotowe pliki” i komunikaty NAD okrągłym znaczkiem Gemini (na dole ekranu, ok. 60 px wysokości) ---------- */\n.sheet{padding:calc(12px + var(--top)) max(8px,env(safe-area-inset-right)) calc(88px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left))}\n.sheet-card{max-height:100%;border-radius:16px;padding-bottom:20px}\n.toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}\n@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}\n/* ---------- modele AI i nowa wersja ---------- */\n.mod-list{margin:0;padding:0;list-style:none;display:grid;gap:6px}\n.mod-list li{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:8px 12px;border-radius:9px;background:var(--paper);border:1px solid var(--steel-line);font-size:14px}\n.mod-list li b{font-weight:600}\n.mod-list li small{color:var(--ink-soft);font-size:13px}\n.mod-list li.on{border-color:var(--safelight)}\n.mod-list li.off{opacity:.6}\n.ver-new{margin:8px auto 0;max-width:560px;font-size:13.5px;color:var(--ink);text-align:center}\n.ver-new .linkbtn{font-size:13.5px}\n";d.head.appendChild(st);
-var box=d.createElement('div');box.innerHTML="<header class=\"hub-bar\">\n  <button class=\"home\" id=\"homeBtn\" type=\"button\" aria-label=\"Menu główne\"><span class=\"mark\" aria-hidden=\"true\"></span><b>Pracownia Fotoksiążki</b></button>\n  <nav class=\"switch\" id=\"switch\" aria-label=\"Aplikacje\"></nav>\n  <div class=\"tools\">\n    <button class=\"tool\" id=\"filesBtn\" type=\"button\" title=\"Gotowe pliki\" aria-label=\"Gotowe pliki\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3v11M7.5 9.5 12 14l4.5-4.5\"/><path d=\"M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4\"/></svg><span class=\"badge\" id=\"filesCount\"></span></button>\n    <button class=\"tool\" id=\"soundBtn\" type=\"button\" aria-pressed=\"true\" title=\"Dźwięki\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 9h4l5-4v14l-5-4H4z\"/><path class=\"on-wave\" d=\"M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12\"/></svg></button>\n    <button class=\"tool\" id=\"wakeBtn\" type=\"button\" aria-pressed=\"true\" title=\"Ekran nie zaśnie\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8\"/></svg></button>\n  </div>\n  <div class=\"hub-prog\" id=\"hubProg\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-label=\"Postęp pracy\"><i id=\"hubBar\"></i></div>\n</header>\n\n<main class=\"menu\" id=\"menu\">\n  <div class=\"menu-in\">\n    <section class=\"intro\">\n      <h1>Pracownia Fotoksiążki</h1>\n      <p>Cztery narzędzia do jednej książki. Możesz przełączać się między nimi w trakcie pracy — rozpoczęte zadanie liczy się dalej w tle.</p>\n    </section>\n    <section class=\"cards\" id=\"cards\"></section>\n    <section class=\"care\" aria-label=\"Ustawienia pracowni\">\n      <button class=\"opt\" id=\"wakeOpt\" type=\"button\" aria-pressed=\"true\"><span class=\"sw\" aria-hidden=\"true\"></span><span><b>Ekran nie zaśnie</b><small id=\"wakeNote\">Włącza się przy pierwszym dotknięciu strony.</small></span></button>\n      <button class=\"opt\" id=\"soundOpt\" type=\"button\" aria-pressed=\"true\"><span class=\"sw\" aria-hidden=\"true\"></span><span><b>Dźwięki pracy</b><small>Inny dźwięk na start, na każdy gotowy element, na zapis pliku, na koniec i na błąd.</small></span></button>\n      <button class=\"linkbtn\" id=\"demoSnd\" type=\"button\">Odsłuchaj wszystkie dźwięki</button>\n    </section>\n    <section class=\"srv\" id=\"srvBox\" aria-labelledby=\"srvTitle\">\n      <h3 id=\"srvTitle\">Zapis plików na Dysk Google</h3>\n      <p>W aplikacji Gemini nie da się pobrać ani udostępnić pliku, ale da się go wysłać. Ustaw to raz, a każdy gotowy plik trafi do folderu „Pracownia Fotoksiążki” na Twoim Dysku Google. Potrzebny jest mały, darmowy skrypt Google na Twoim koncie (plik <b>Dysk_Google_skrypt.txt</b>).</p>\n      <div class=\"seg\" role=\"radiogroup\" aria-label=\"Dokąd zapisywać\">\n        <button type=\"button\" role=\"radio\" data-mode=\"dysk\" aria-checked=\"true\">Mój Dysk Google</button>\n        <button type=\"button\" role=\"radio\" data-mode=\"serwer\" aria-checked=\"false\">Własny serwer</button>\n      </div>\n      <div class=\"srv-grid\" id=\"modeDysk\">\n        <div class=\"full\"><label for=\"dyskUrl\">Adres skryptu (aplikacja internetowa)</label><input id=\"dyskUrl\" type=\"url\" inputmode=\"url\" autocomplete=\"off\" placeholder=\"https://script.google.com/macros/s/…/exec\"></div>\n        <div class=\"full\"><label for=\"dyskKod\">Kod dostępu (ten sam co w skrypcie)</label><input id=\"dyskKod\" type=\"text\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\" placeholder=\"np. foto-…\"></div>\n      </div>\n      <div class=\"srv-grid\" id=\"modeSerwer\" hidden>\n        <div><label for=\"srvUrl\">Adres wysyłania (POST)</label><input id=\"srvUrl\" type=\"url\" inputmode=\"url\" autocomplete=\"off\" placeholder=\"https://moj-serwer.pl/upload\"></div>\n        <div><label for=\"srvField\">Nazwa pola z plikiem</label><input id=\"srvField\" type=\"text\" autocomplete=\"off\" placeholder=\"file\"></div>\n        <div class=\"full\"><label for=\"srvAuth\">Nagłówek Authorization (opcjonalnie)</label><input id=\"srvAuth\" type=\"password\" autocomplete=\"off\" placeholder=\"np. Bearer twój-token\"></div>\n      </div>\n      <button class=\"opt auto\" id=\"autoOpt\" type=\"button\" aria-pressed=\"true\"><span class=\"sw\" aria-hidden=\"true\"></span><span><b>Zapisuj każdy plik od razu</b><small>Po zapisie w Ramkach, Okładce, Odbitkach albo Generatorze obrazów plik sam trafi na Dysk. Nic nie trzeba klikać.</small></span></button>\n      <div class=\"srv-actions\"><button class=\"fa pri\" id=\"srvSave\" type=\"button\">Zapisz</button><button class=\"fa\" id=\"srvTest\" type=\"button\">Sprawdź połączenie</button><button class=\"fa\" id=\"srvClear\" type=\"button\">Wyczyść</button></div>\n      <p id=\"srvState\" class=\"srv-state\" role=\"status\"></p>\n    </section>\n    <section class=\"srv\" id=\"modBox\" aria-labelledby=\"modTitle\">\n      <h3 id=\"modTitle\">Modele AI</h3>\n      <p>Pracownia sama sprawdza, jakie modele obrazu podaje Gemini, i każdej aplikacji daje zawsze najnowszy: najpierw Nano Banana Pro, potem najnowszy zwykły, Lite i starszy. Gdy Google wyda nowszy model, Pracownia użyje go sama — także w Ramkach, Okładce i Odbitkach. Modele wyłączone przez Google są pomijane.</p>\n      <ol class=\"mod-list\" id=\"modList\"></ol>\n      <p id=\"modState\" class=\"srv-state\" role=\"status\"></p>\n    </section>\n    <p class=\"ver\">Wersja Pracowni: 22.10.2026 (75)</p>\n    <p class=\"ver-new\" id=\"verNew\" role=\"status\" hidden></p>\n  </div>\n</main>\n\n<div class=\"stage\" id=\"stage\"></div>\n<div class=\"toast\" id=\"toast\" role=\"status\" aria-live=\"polite\"></div>\n<div class=\"sheet\" id=\"sheet\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"sheetTitle\">\n  <div class=\"sheet-card\">\n    <div class=\"sheet-head\"><h2 id=\"sheetTitle\">Gotowe pliki</h2><button class=\"x\" id=\"sheetClose\" type=\"button\" aria-label=\"Zamknij\">×</button></div>\n    <p class=\"sheet-lead\" id=\"sheetLead\"></p>\n    <button class=\"fa wtle\" id=\"sheetMin\" type=\"button\" hidden>Zwiń — zapis idzie w tle</button>\n    <button class=\"fa pri all\" id=\"shareAll\" type=\"button\"></button>\n    <div id=\"fileList\"></div>\n  </div>\n</div>\n<video class=\"nosleep\" id=\"nosleep\" muted playsinline loop preload=\"auto\" aria-hidden=\"true\" src=\"data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAANDbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAD6AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAm10cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAD6AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAA+gAAAAAAABAAAAAAHlbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAABAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABkG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAVBzdGJsAAAAuHN0c2QAAAAAAAAAAQAAAKhhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABFUxhdmM2MC4zMS4xMDIgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAALmF2Y0MBQsAe/+EAFmdCwB7ZHsBEAAADAAQAAAMAEDxYuSABAAVoy4PLIAAAABBwYXNwAAAAAQAAAAEAAAAUYnRydAAAAAAAAAWOAAAFjgAAABhzdHRzAAAAAAAAAAEAAAAIAAAgAAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAAIAAAAAQAAADRzdHN6AAAAAAAAAAAAAAAIAAAChgAAAAoAAAAKAAAACQAAAAkAAAAJAAAACQAAAAkAAAAUc3RjbwAAAAAAAAABAAADcwAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNjAuMTYuMTAwAAAACGZyZWUAAALPbWRhdAAAAnAGBf//bNxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjQgcjMxMDggMzFlMTlmOSAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjMgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTIgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAAOZYiEBX///w9FAAFC34AAAAAGQZo4CvqAAAAABkGaVAK+oAAAAAVBmmAV9QAAAAVBmoAU9QAAAAVBmqAU9QAAAAVBmsAU9QAAAAVBmuAS9Q==\"></video>";
+var box=d.createElement('div');box.innerHTML="<header class=\"hub-bar\">\n  <button class=\"home\" id=\"homeBtn\" type=\"button\" aria-label=\"Menu główne\"><span class=\"mark\" aria-hidden=\"true\"></span><b>Pracownia Fotoksiążki</b></button>\n  <nav class=\"switch\" id=\"switch\" aria-label=\"Aplikacje\"></nav>\n  <div class=\"tools\">\n    <button class=\"tool\" id=\"filesBtn\" type=\"button\" title=\"Gotowe pliki\" aria-label=\"Gotowe pliki\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3v11M7.5 9.5 12 14l4.5-4.5\"/><path d=\"M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4\"/></svg><span class=\"badge\" id=\"filesCount\"></span></button>\n    <button class=\"tool\" id=\"soundBtn\" type=\"button\" aria-pressed=\"true\" title=\"Dźwięki\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 9h4l5-4v14l-5-4H4z\"/><path class=\"on-wave\" d=\"M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12\"/></svg></button>\n    <button class=\"tool\" id=\"wakeBtn\" type=\"button\" aria-pressed=\"true\" title=\"Ekran nie zaśnie\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8\"/></svg></button>\n  </div>\n  <div class=\"hub-prog\" id=\"hubProg\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-label=\"Postęp pracy\"><i id=\"hubBar\"></i></div>\n</header>\n\n<main class=\"menu\" id=\"menu\">\n  <div class=\"menu-in\">\n    <section class=\"intro\">\n      <h1>Pracownia Fotoksiążki</h1>\n      <p>Cztery narzędzia do jednej książki. Możesz przełączać się między nimi w trakcie pracy — rozpoczęte zadanie liczy się dalej w tle.</p>\n    </section>\n    <section class=\"cards\" id=\"cards\"></section>\n    <section class=\"care\" aria-label=\"Ustawienia pracowni\">\n      <button class=\"opt\" id=\"wakeOpt\" type=\"button\" aria-pressed=\"true\"><span class=\"sw\" aria-hidden=\"true\"></span><span><b>Ekran nie zaśnie</b><small id=\"wakeNote\">Włącza się przy pierwszym dotknięciu strony.</small></span></button>\n      <button class=\"opt\" id=\"soundOpt\" type=\"button\" aria-pressed=\"true\"><span class=\"sw\" aria-hidden=\"true\"></span><span><b>Dźwięki pracy</b><small>Inny dźwięk na start, na każdy gotowy element, na zapis pliku, na koniec i na błąd.</small></span></button>\n      <button class=\"linkbtn\" id=\"demoSnd\" type=\"button\">Odsłuchaj wszystkie dźwięki</button>\n    </section>\n    <section class=\"srv\" id=\"srvBox\" aria-labelledby=\"srvTitle\">\n      <h3 id=\"srvTitle\">Zapis plików na Dysk Google</h3>\n      <p>W aplikacji Gemini nie da się pobrać ani udostępnić pliku, ale da się go wysłać. Ustaw to raz, a każdy gotowy plik trafi do folderu „Pracownia Fotoksiążki” na Twoim Dysku Google. Potrzebny jest mały, darmowy skrypt Google na Twoim koncie (plik <b>Dysk_Google_skrypt.txt</b>). Ten sam skrypt (od wersji 3) pozwala też wybierać zdjęcia ze Zdjęć Google — ikonka „Zdjęcia Google” przy wgrywaniu zdjęć w każdej aplikacji.</p>\n      <div class=\"seg\" role=\"radiogroup\" aria-label=\"Dokąd zapisywać\">\n        <button type=\"button\" role=\"radio\" data-mode=\"dysk\" aria-checked=\"true\">Mój Dysk Google</button>\n        <button type=\"button\" role=\"radio\" data-mode=\"serwer\" aria-checked=\"false\">Własny serwer</button>\n      </div>\n      <div class=\"srv-grid\" id=\"modeDysk\">\n        <div class=\"full\"><label for=\"dyskUrl\">Adres skryptu (aplikacja internetowa)</label><input id=\"dyskUrl\" type=\"url\" inputmode=\"url\" autocomplete=\"off\" placeholder=\"https://script.google.com/macros/s/…/exec\"></div>\n        <div class=\"full\"><label for=\"dyskKod\">Kod dostępu (ten sam co w skrypcie)</label><input id=\"dyskKod\" type=\"text\" autocomplete=\"off\" autocapitalize=\"off\" spellcheck=\"false\" placeholder=\"np. foto-…\"></div>\n      </div>\n      <div class=\"srv-grid\" id=\"modeSerwer\" hidden>\n        <div><label for=\"srvUrl\">Adres wysyłania (POST)</label><input id=\"srvUrl\" type=\"url\" inputmode=\"url\" autocomplete=\"off\" placeholder=\"https://moj-serwer.pl/upload\"></div>\n        <div><label for=\"srvField\">Nazwa pola z plikiem</label><input id=\"srvField\" type=\"text\" autocomplete=\"off\" placeholder=\"file\"></div>\n        <div class=\"full\"><label for=\"srvAuth\">Nagłówek Authorization (opcjonalnie)</label><input id=\"srvAuth\" type=\"password\" autocomplete=\"off\" placeholder=\"np. Bearer twój-token\"></div>\n      </div>\n      <button class=\"opt auto\" id=\"autoOpt\" type=\"button\" aria-pressed=\"true\"><span class=\"sw\" aria-hidden=\"true\"></span><span><b>Zapisuj każdy plik od razu</b><small>Po zapisie w Ramkach, Okładce, Odbitkach albo Generatorze obrazów plik sam trafi na Dysk. Nic nie trzeba klikać.</small></span></button>\n      <div class=\"srv-actions\"><button class=\"fa pri\" id=\"srvSave\" type=\"button\">Zapisz</button><button class=\"fa\" id=\"srvTest\" type=\"button\">Sprawdź połączenie</button><button class=\"fa\" id=\"srvClear\" type=\"button\">Wyczyść</button></div>\n      <p id=\"srvState\" class=\"srv-state\" role=\"status\"></p>\n    </section>\n    <section class=\"srv\" id=\"modBox\" aria-labelledby=\"modTitle\">\n      <h3 id=\"modTitle\">Modele AI</h3>\n      <p>Pracownia sama sprawdza, jakie modele obrazu podaje Gemini, i każdej aplikacji daje zawsze najnowszy: najpierw Nano Banana Pro, potem najnowszy zwykły, Lite i starszy. Gdy Google wyda nowszy model, Pracownia użyje go sama — także w Ramkach, Okładce i Odbitkach. Modele wyłączone przez Google są pomijane.</p>\n      <ol class=\"mod-list\" id=\"modList\"></ol>\n      <p id=\"modState\" class=\"srv-state\" role=\"status\"></p>\n    </section>\n    <p class=\"ver\">Wersja Pracowni: 25.10.2026 (76)</p>\n    <p class=\"ver-new\" id=\"verNew\" role=\"status\" hidden></p>\n  </div>\n</main>\n\n<div class=\"stage\" id=\"stage\"></div>\n<div class=\"toast\" id=\"toast\" role=\"status\" aria-live=\"polite\"></div>\n<div class=\"sheet\" id=\"sheet\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"sheetTitle\">\n  <div class=\"sheet-card\">\n    <div class=\"sheet-head\"><h2 id=\"sheetTitle\">Gotowe pliki</h2><button class=\"x\" id=\"sheetClose\" type=\"button\" aria-label=\"Zamknij\">×</button></div>\n    <p class=\"sheet-lead\" id=\"sheetLead\"></p>\n    <button class=\"fa wtle\" id=\"sheetMin\" type=\"button\" hidden>Zwiń — zapis idzie w tle</button>\n    <button class=\"fa pri all\" id=\"shareAll\" type=\"button\"></button>\n    <div id=\"fileList\"></div>\n  </div>\n</div>\n<video class=\"nosleep\" id=\"nosleep\" muted playsinline loop preload=\"auto\" aria-hidden=\"true\" src=\"data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAANDbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAD6AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAm10cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAD6AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAA+gAAAAAAABAAAAAAHlbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAABAABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABkG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAVBzdGJsAAAAuHN0c2QAAAAAAAAAAQAAAKhhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABFUxhdmM2MC4zMS4xMDIgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAALmF2Y0MBQsAe/+EAFmdCwB7ZHsBEAAADAAQAAAMAEDxYuSABAAVoy4PLIAAAABBwYXNwAAAAAQAAAAEAAAAUYnRydAAAAAAAAAWOAAAFjgAAABhzdHRzAAAAAAAAAAEAAAAIAAAgAAAAABRzdHNzAAAAAAAAAAEAAAABAAAAHHN0c2MAAAAAAAAAAQAAAAEAAAAIAAAAAQAAADRzdHN6AAAAAAAAAAAAAAAIAAAChgAAAAoAAAAKAAAACQAAAAkAAAAJAAAACQAAAAkAAAAUc3RjbwAAAAAAAAABAAADcwAAAGJ1ZHRhAAAAWm1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXJhcHBsAAAAAAAAAAAAAAAALWlsc3QAAAAlqXRvbwAAAB1kYXRhAAAAAQAAAABMYXZmNjAuMTYuMTAwAAAACGZyZWUAAALPbWRhdAAAAnAGBf//bNxF6b3m2Ui3lizYINkj7u94MjY0IC0gY29yZSAxNjQgcjMxMDggMzFlMTlmOSAtIEguMjY0L01QRUctNCBBVkMgY29kZWMgLSBDb3B5bGVmdCAyMDAzLTIwMjMgLSBodHRwOi8vd3d3LnZpZGVvbGFuLm9yZy94MjY0Lmh0bWwgLSBvcHRpb25zOiBjYWJhYz0wIHJlZj0zIGRlYmxvY2s9MTowOjAgYW5hbHlzZT0weDE6MHgxMTEgbWU9aGV4IHN1Ym1lPTcgcHN5PTEgcHN5X3JkPTEuMDA6MC4wMCBtaXhlZF9yZWY9MSBtZV9yYW5nZT0xNiBjaHJvbWFfbWU9MSB0cmVsbGlzPTEgOHg4ZGN0PTAgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9LTIgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MCB3ZWlnaHRwPTAga2V5aW50PTI1MCBrZXlpbnRfbWluPTIgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD00MCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAAOZYiEBX///w9FAAFC34AAAAAGQZo4CvqAAAAABkGaVAK+oAAAAAVBmmAV9QAAAAVBmoAU9QAAAAVBmqAU9QAAAAVBmsAU9QAAAAVBmuAS9Q==\"></video>";
 while(box.firstChild)d.body.appendChild(box.firstChild);
 d.body.classList.add('in-menu');
 d.title='Pracownia Fotoksiążki';
@@ -316,6 +316,21 @@ function bridge(){
   EventTarget.prototype.dispatchEvent=function(e){if(e&&e.type==='click'&&this&&this.tagName==='A'&&grab(this))return false;return od.apply(this,arguments);};
   document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('a[download]');if(a&&e.isTrusted&&grab(a))e.preventDefault();},true);
   var oa=window.alert;window.alert=function(){send('alert');return oa.apply(window,arguments);};
+  /* Zdjęcia Google: przy wyborze zdjęć Pracownia pokazuje dwie ikonki — „Z urządzenia” i „Zdjęcia Google”.
+     Dotyczy tylko pól pliku z obrazami (accept z „image”); inne pola (JSON, filmy) działają jak dotąd. */
+  try{
+    if(H.zdjecia){
+      var oic=HTMLInputElement.prototype.click,osp=HTMLInputElement.prototype.showPicker;
+      var zdj=function(inp){
+        if(!inp||inp.tagName!=='INPUT'||String(inp.type).toLowerCase()!=='file'||inp.disabled||inp.__pfOmin)return false;
+        if(!/image/i.test(inp.getAttribute('accept')||''))return false;
+        try{return !!H.zdjecia(id,inp,oic);}catch(e){return false;}
+      };
+      HTMLInputElement.prototype.click=function(){if(zdj(this))return;return oic.apply(this,arguments);};
+      if(typeof osp==='function')HTMLInputElement.prototype.showPicker=function(){if(zdj(this))return;return osp.apply(this,arguments);};
+      document.addEventListener('click',function(e){var t=e.target;if(t&&t.tagName==='INPUT'&&String(t.type).toLowerCase()==='file'&&zdj(t)){e.preventDefault();e.stopImmediatePropagation();}},true);
+    }
+  }catch(e){}
   ['pointerdown','keydown'].forEach(function(t){document.addEventListener(t,function(){send('gesture');},true);});
   /* odczyt pasków postępu aplikacji */
   var seen=typeof WeakMap==='function'?new WeakMap():null,lastSent='x',lastAt=0,batch=false,bDone=-1,bAt=0,hold=false,holdAt=0,cpsObs=null,ghWas=false,ghObs=null,ownWas=false,ownObs=null;
@@ -1042,7 +1057,13 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSheet()
     var v=zbierz();if(!v.url){stan('Wpisz adres skryptu.','err');return;}
     stan('Sprawdzam połączenie z Dyskiem…');
     gasPost(v.url,{akcja:'test',kod:v.kod}).then(function(r){
-      if(r.ok){stan('Połączono. Pliki trafią do folderu „'+(r.folder||'Pracownia Fotoksiążki')+'” na Twoim Dysku Google'+(r.podfoldery?', każda aplikacja do swojego podfolderu.':'. Skrypt ma starszą wersję (bez podfolderów): zaktualizuj go, gdy będziesz mieć chwilę.'),'ok');snd('done');}
+      if(r.ok){var msg='Połączono. Pliki trafią do folderu „'+(r.folder||'Pracownia Fotoksiążki')+'” na Twoim Dysku Google'+(r.podfoldery?', każda aplikacja do swojego podfolderu.':'. Skrypt ma starszą wersję (bez podfolderów): zaktualizuj go, gdy będziesz mieć chwilę.');
+        if(!r.zdjecia){stan(msg+' Zdjęcia Google: skrypt ma starszą wersję — zaktualizuj go do wersji 3 (instrukcja w paczce: 0_INSTRUKCJA, krok 3 „Skrypt Google w wersji 3”).','ok');snd('done');}
+        else{stan(msg+' Sprawdzam Zdjęcia Google…','ok');
+          gasPost(v.url,{akcja:'zdjecia_test',kod:v.kod}).then(function(z){
+            if(z.ok){stan(msg+' Zdjęcia Google: działają.','ok');snd('done');}
+            else{stan(msg+' Zdjęcia Google: jeszcze nie działają — '+String(z.error||'błąd').replace(/\.$/,'')+'.','err');snd('warn');}
+          },function(e){stan(msg+' Zdjęcia Google: skrypt nie odpowiedział ('+e.message+').','err');snd('warn');});}}
       else{stan('Skrypt odpowiedział, ale: '+(r.error||'błąd')+'.','err');snd('error');}
     },function(e){stan('Brak połączenia ze skryptem ('+e.message+'). Sprawdź adres i czy wdrożenie ma dostęp „Każdy”.','err');snd('error');});
   });
@@ -1051,6 +1072,344 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSheet()
     var d=srvStaly();if(d){$('#dyskUrl').value=d.url;$('#dyskKod').value=d.kod;mode='dysk';auto=true;pokaz();}
     opis();renderFiles();});
   pokaz();opis();
+})();
+
+/* ---------- Zdjęcia Google: dwie ikonki przy wgrywaniu zdjęć — „Z urządzenia” i „Zdjęcia Google” ----------
+   Gdy aplikacja otwiera wybór zdjęć (pole pliku z obrazami), Pracownia pokazuje w niej okienko z dwiema ikonkami.
+   „Z urządzenia” otwiera zwykły wybór plików. „Zdjęcia Google” otwiera okno Zdjęć Google przez Twój skrypt Google
+   (wersja 3), a wybrane zdjęcia trafiają do aplikacji tak, jakby były wybrane z urządzenia. JPEG, PNG, WebP: oryginał
+   z danymi EXIF (Google usuwa z nich tylko miejsce GPS). HEIC i inne formaty, których przeglądarka nie otworzy: JPEG
+   z datą i godziną zrobienia z oryginału. JPEG bez danych EXIF dostaje datę i godzinę ze Zdjęć Google. */
+var ZDJ=(function(){
+  var CZ=6*1024*1024,PASY=3,akt=null;
+  var IK_URZ='<svg viewBox="0 0 48 48" fill="none" stroke="#1C201B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="13" y="4" width="22" height="40" rx="4"/><path d="M21 39h6"/><rect x="17" y="10" width="14" height="22" rx="1.5" fill="#E3A23E" fill-opacity=".35" stroke="none"/><path d="M17.5 28.5l4.2-4.6 3.3 3.3 2.3-2.3 3.2 3.6"/><circle cx="27" cy="15.5" r="1.8" fill="#C1401F" stroke="none"/></svg>';
+  var IK_GP='<svg viewBox="0 0 48 48" fill="none" stroke="#1C201B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 33.5h-2.3a8.2 8.2 0 0 1-1-16.3A11.3 11.3 0 0 1 33 13.6a8.7 8.7 0 0 1 3.4 15.6"/><rect x="18.5" y="23.5" width="21" height="17" rx="2.5" fill="#fff"/><rect x="21" y="26" width="16" height="12" rx="1" fill="#E3A23E" fill-opacity=".35" stroke="none"/><path d="M21.5 37l4.4-4.8 3.4 3.4 2.4-2.4 3.4 3.8"/><circle cx="32.3" cy="29" r="1.7" fill="#C1401F" stroke="none"/></svg>';
+  var IK_OTW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+  var CSS=':host{all:initial}*{box-sizing:border-box}[hidden]{display:none!important}'+
+    '.tlo{position:fixed;inset:0;background:rgba(28,32,27,.45);display:flex;align-items:flex-end;justify-content:center;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;color:#1C201B;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}'+
+    '.okno{width:100%;max-width:560px;max-height:94%;overflow:auto;-webkit-overflow-scrolling:touch;background:#EEEFEA;border-radius:16px 16px 0 0;padding:18px max(18px,env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));box-shadow:0 -12px 40px rgba(0,0,0,.25)}'+
+    '@media (min-width:700px){.tlo{align-items:center}.okno{border-radius:16px}}'+
+    '.glowa{display:flex;align-items:center;gap:10px;margin-bottom:14px}'+
+    'h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:22px;line-height:1.15;margin:0;flex:1}'+
+    '.x{width:40px;height:40px;flex:none;border:0;border-radius:50%;background:rgba(72,83,76,.12);color:#1C201B;font-size:24px;line-height:1;cursor:pointer}'+
+    '.dwa{display:grid;grid-template-columns:1fr 1fr;gap:12px}'+
+    '.ik{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:156px;padding:18px 10px 16px;border:1px solid rgba(72,83,76,.25);border-radius:13px;background:#fff;color:#1C201B;font-family:inherit;text-align:center;cursor:pointer}'+
+    '.ik:hover{border-color:#48534C}.ik:active{background:#F6F6F2}'+
+    '.ik svg{width:58px;height:58px;flex:none}.ik span{display:flex;flex-direction:column;align-items:center;gap:3px}.ik b{font-size:16px;font-weight:600}.ik small{font-size:12.5px;line-height:1.35;color:#59635B;max-width:20ch}'+
+    ':focus-visible{outline:3px solid rgba(193,64,31,.5);outline-offset:2px}'+
+    '.st{margin:0 0 12px;font-size:15px}.st.err{color:#9A3216}'+
+    '.pas{height:6px;border-radius:3px;background:rgba(72,83,76,.15);overflow:hidden;margin:0 0 6px}.pas i{display:block;height:100%;width:0;background:#C1401F;transition:width .3s}'+
+    '.czas{margin:0 0 12px;font-size:13px;color:#59635B;font-variant-numeric:tabular-nums}.czas:empty{display:none}'+
+    '.fa{min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(72,83,76,.25);background:#EEEFEA;border-radius:9px;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;line-height:1.2;color:#1C201B;padding:6px 12px;text-align:center;text-decoration:none}'+
+    '.fa:hover{border-color:#48534C}.fa.pri{background:#C1401F;border-color:#C1401F;color:#fff}.fa.pri:hover{background:#9A3216}.fa svg{width:20px;height:20px;flex:none}'+
+    '.otw{width:100%;margin:0 0 10px;font-size:15px;min-height:50px}'+
+    '.nie{margin:0 0 14px;font-size:13.5px;color:#59635B}.nie summary{cursor:pointer;color:#1C201B;font-weight:600;padding:6px 0}.nie p{margin:4px 0 8px}'+
+    '.kop{display:flex;gap:8px}.kop input{flex:1;min-width:0;height:44px;border:1px solid rgba(72,83,76,.25);border-radius:8px;padding:0 10px;font-family:inherit;font-size:13px;background:#fff;color:#1C201B}.kop .fa{min-height:44px}'+
+    '.kopst{margin:6px 0 0;font-size:12.5px}.kopst:empty{display:none}'+
+    '.akcje{display:flex;gap:10px;flex-wrap:wrap}.akcje .fa{flex:1 1 140px}'+
+    '@media (max-width:370px){.dwa{grid-template-columns:1fr}.ik{min-height:0;flex-direction:row;justify-content:flex-start;text-align:left;gap:12px;padding:14px}.ik svg{width:44px;height:44px}.ik span{align-items:flex-start}.ik small{max-width:none}}';
+
+  function odm(n,a,b,c){return n===1?a:(n%10>=2&&n%10<=4&&(n%100<12||n%100>14))?b:c;}
+  function zdjec(n){return n+' '+odm(n,'zdjęcie','zdjęcia','zdjęć');}
+  function pozost(n){return odm(n,'Pozostało ','Pozostały ','Pozostało ')+zdjec(n);}
+  function filmow(n){return n+' '+odm(n,'film','filmy','filmów');}
+  function czekaj(ms){return new Promise(function(ok){setTimeout(ok,ms);});}
+  function b64(s){var bin=atob(s),n=bin.length,u=new Uint8Array(n);for(var i=0;i<n;i++)u[i]=bin.charCodeAt(i);return u;}
+
+  function html(jedno){
+    return '<div class="tlo"><div class="okno" role="dialog" aria-modal="true" aria-labelledby="zt">'+
+      '<div class="glowa"><h2 id="zt">'+(jedno?'Skąd wziąć zdjęcie?':'Skąd wziąć zdjęcia?')+'</h2><button class="x" type="button" aria-label="Zamknij">×</button></div>'+
+      '<div class="dwa">'+
+        '<button class="ik" type="button" data-co="urz">'+IK_URZ+'<span><b>Z urządzenia</b><small>Pliki z tego telefonu albo komputera</small></span></button>'+
+        '<button class="ik" type="button" data-co="gp">'+IK_GP+'<span><b>Zdjęcia Google</b><small>'+(jedno?'Zdjęcie':'Zdjęcia')+' z Twojego konta Google</small></span></button>'+
+      '</div>'+
+      '<div class="gp" hidden>'+
+        '<p class="st" role="status"></p>'+
+        '<div class="pas" hidden><i></i></div><p class="czas"></p>'+
+        '<a class="fa pri otw" href="#" target="_blank" rel="noopener" hidden>'+IK_OTW+'Otwórz Zdjęcia Google</a>'+
+        '<details class="nie" hidden><summary>Nie otwiera się?</summary>'+
+          '<p>Aplikacja Gemini czasem blokuje nowe okna. Skopiuj ten adres, wklej go w przeglądarce (np. w Chrome) i tam wybierz '+(jedno?'zdjęcie':'zdjęcia')+'. Potem wróć tutaj — '+(jedno?'zdjęcie pobierze się samo':'zdjęcia pobiorą się same')+'. Adres działa też na innym urządzeniu zalogowanym na to samo konto Google.</p>'+
+          '<div class="kop"><input readonly aria-label="Adres okna Zdjęć Google"><button class="fa kopiuj" type="button">Kopiuj</button></div><p class="kopst" role="status"></p>'+
+        '</details>'+
+        '<div class="akcje"><button class="fa znow" type="button" hidden>Spróbuj jeszcze raz</button><button class="fa urz2" type="button">Z urządzenia</button><button class="fa anuluj" type="button">Anuluj</button></div>'+
+      '</div>'+
+    '</div></div>';
+  }
+
+  /* Wywołuje to wstawka w aplikacji (bridge), gdy aplikacja chce otworzyć wybór zdjęć. true = okienko pokazane. */
+  function wybor(app,inp,oic){
+    var doc=inp&&inp.ownerDocument,W=doc&&doc.defaultView;
+    if(!doc||!W||!doc.body)return false;
+    if(doc.__pfOkno)return true;
+    var jedno=!inp.multiple,host=doc.createElement('div');
+    host.setAttribute('data-pracownia','zdjecia');
+    host.setAttribute('style','all:initial;position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483600;display:block');
+    var root=host.attachShadow?host.attachShadow({mode:'open'}):host;
+    root.innerHTML='<style>'+CSS+'</style>'+html(jedno);
+    doc.body.appendChild(host);doc.__pfOkno=host;
+    var o={app:app,inp:inp,oic:oic,doc:doc,W:W,host:host,root:root,jedno:jedno,stan:'wybor0',q:function(s){return root.querySelector(s);}};
+    o.q('[data-co="urz"]').addEventListener('click',function(){zUrzadzenia(o);});
+    o.q('.urz2').addEventListener('click',function(){zUrzadzenia(o);});
+    o.q('[data-co="gp"]').addEventListener('click',function(){google(o);});
+    o.q('.znow').addEventListener('click',function(){if(o.sesja){koniecSesji(o.sesja);o.sesja=null;}google(o);});
+    o.q('.x').addEventListener('click',function(){zamknij(o);});
+    o.q('.anuluj').addEventListener('click',function(){zamknij(o);});
+    o.q('.tlo').addEventListener('click',function(e){if(e.target===e.currentTarget&&!o.pobieranie)zamknij(o);});
+    o.klaw=function(e){if(e.key==='Escape'&&!o.pobieranie)zamknij(o);};doc.addEventListener('keydown',o.klaw,true);
+    o.q('.otw').addEventListener('click',function(){o.otwarte=true;if(o.stan==='wybor')tekst(o,czekamTxt(o));});
+    o.q('.kopiuj').addEventListener('click',function(){kopiuj(o);});
+    setTimeout(function(){try{o.q('[data-co="urz"]').focus({preventScroll:true});}catch(e){}},30);
+    return true;
+  }
+
+  function zUrzadzenia(o){
+    var inp=o.inp;inp.__pfOmin=true;
+    try{o.oic.call(inp);}catch(e){}
+    inp.__pfOmin=false;
+    zamknij(o);
+  }
+
+  function zamknij(o){
+    if(o.zamkniete)return;o.zamkniete=true;
+    clearTimeout(o.tStan);clearInterval(o.tik);
+    try{o.doc.removeEventListener('keydown',o.klaw,true);}catch(e){}
+    try{o.host.parentNode.removeChild(o.host);}catch(e){}
+    if(o.doc.__pfOkno===o.host)o.doc.__pfOkno=null;
+    if(o.vis){document.removeEventListener('visibilitychange',o.vis);window.removeEventListener('focus',o.vis);}
+    if(akt===o)akt=null;
+    if(o.pobieranie)PracowniaCzas.hide('zdjecia');
+    if(o.sesja){koniecSesji(o.sesja);o.sesja=null;}
+  }
+
+  function widok(o){
+    o.q('.dwa').hidden=true;o.q('.gp').hidden=false;o.q('#zt').textContent='Zdjęcia Google';
+    o.q('.znow').hidden=true;o.q('.urz2').hidden=false;o.q('.pas').hidden=true;o.q('.czas').textContent='';
+    o.q('.otw').hidden=true;o.q('.nie').hidden=true;
+  }
+  function tekst(o,m){var e=o.q('.st');e.textContent=m;e.className='st';}
+  function blad(o,m,bezPowtorki){
+    var e=o.q('.st');e.textContent=m;e.className='st err';
+    o.q('.otw').hidden=true;o.q('.nie').hidden=true;o.q('.pas').hidden=true;o.q('.czas').textContent='';
+    o.q('.znow').hidden=!!bezPowtorki;o.q('.urz2').hidden=false;o.pobieranie=false;
+    snd('warn');
+  }
+  function czekamTxt(o){return 'Czekam, aż wybierzesz '+(o.jedno?'zdjęcie':'zdjęcia')+' w Zdjęciach Google i dotkniesz „Gotowe”. Potem wróć tutaj — '+(o.jedno?'zdjęcie pobierze się samo.':'zdjęcia pobiorą się same.');}
+
+  function koniecSesji(sesja){var s=srv();if(s&&s.url&&sesja)gasPost(s.url,{akcja:'zdjecia_koniec',kod:s.kod||'',sesja:sesja}).then(null,function(){});}
+
+  /* Zapytanie do skryptu z ponawianiem chwilowych błędów (sieć, przeciążenie Google). */
+  function zapytaj(o,dane,proby){
+    proby=proby||0;
+    return gasPost(o.s.url,dane).then(function(r){if(!r.ok){var e=new Error(r.error||'skrypt odmówił');e.skrypt=true;throw e;}return r;})
+      .then(null,function(e){
+        if(o.zamkniete||proby>=2||(e&&e.skrypt&&/wybierz|nie ma|wygasł|godzin|kod dostępu|nieznana akcja|Photos Picker|zgody/.test(e.message)))throw e;
+        return czekaj(1500*(proby+1)).then(function(){return zapytaj(o,dane,proby+1);});
+      });
+  }
+
+  function bladStartu(e){
+    var m=(e&&e.message)||String(e||'');
+    if(/nieznana akcja/.test(m))return 'Twój skrypt Google ma starszą wersję i nie zna jeszcze Zdjęć Google. Zaktualizuj go do wersji 3 — instrukcja w paczce: 0_INSTRUKCJA, krok 3 „Skrypt Google w wersji 3”. Do tego czasu wybierz „Z urządzenia”.';
+    if(/zły kod/.test(m))return 'Skrypt Google nie przyjął kodu dostępu. Sprawdź kod w menu Pracowni („Zapis plików na Dysk Google”).';
+    if(/brak połączenia/.test(m))return 'Brak połączenia ze skryptem Google. Sprawdź internet i spróbuj jeszcze raz.';
+    return 'Zdjęcia Google: '+m.replace(/\.$/,'')+'.';
+  }
+
+  function google(o){
+    widok(o);
+    if(akt&&akt!==o){blad(o,'Trwa pobieranie zdjęć ze Zdjęć Google w aplikacji „'+nameOf(akt.app)+'”. Poczekaj, aż się skończy, albo wybierz „Z urządzenia”.');return;}
+    var s=srv();
+    if(!s||!s.url){blad(o,'Zdjęcia Google działają przez Twój skrypt Google — ten sam, który zapisuje pliki na Dysku Google. Najpierw ustaw go w menu Pracowni („Zapis plików na Dysk Google”).',true);return;}
+    if(s.mode==='serwer'){blad(o,'Zdjęcia Google działają tylko przez skrypt Google (w menu Pracowni: „Mój Dysk Google”), nie przez własny serwer.',true);return;}
+    akt=o;o.s=s;o.stan='start';o.otwarte=false;tekst(o,'Łączę się z Twoim kontem Google…');
+    zapytaj(o,{akcja:'zdjecia_start',kod:s.kod||'',ile:o.jedno?1:0}).then(function(r){
+      if(o.zamkniete){if(r.sesja)koniecSesji(r.sesja);return;}
+      o.sesja=r.sesja;o.adres=String(r.adres||'');o.co=Math.max(2,Math.min(10,+r.co||4));o.limit=(+r.limit>0?+r.limit:1800)*1000;o.t0=now();
+      o.stan='wybor';
+      var a=o.q('.otw');a.href=o.adres.replace(/\/+$/,'')+'/autoclose';a.hidden=false;
+      o.q('.nie').hidden=false;o.q('.kop input').value=o.adres;
+      tekst(o,'Dotknij „Otwórz Zdjęcia Google”, '+(o.jedno?'wybierz zdjęcie':'zaznacz zdjęcia')+' i dotknij „Gotowe”. Potem wróć tutaj — '+(o.jedno?'zdjęcie pobierze się samo.':'zdjęcia pobiorą się same.'));
+      if(!o.vis){o.vis=function(){if(document.visibilityState==='visible'&&o.stan==='wybor')planuj(o,300);};
+        document.addEventListener('visibilitychange',o.vis);window.addEventListener('focus',o.vis);}
+      planuj(o,o.co*1000);
+    },function(e){if(o.zamkniete)return;akt=null;o.stan='blad';blad(o,bladStartu(e),/nieznana akcja|zły kod/.test((e&&e.message)||''));});
+  }
+
+  function planuj(o,ms){clearTimeout(o.tStan);o.tStan=setTimeout(function(){stanTeraz(o);},ms);}
+  function stanTeraz(o){
+    if(o.zamkniete||o.stan!=='wybor')return;
+    if(now()-o.t0>o.limit){o.stan='blad';akt=null;koniecSesji(o.sesja);o.sesja=null;blad(o,'Czas na wybór minął. Dotknij „Spróbuj jeszcze raz”.');return;}
+    if(o.pyta)return;o.pyta=true;
+    gasPost(o.s.url,{akcja:'zdjecia_stan',kod:o.s.kod||'',sesja:o.sesja}).then(function(r){
+      o.pyta=false;if(o.zamkniete||o.stan!=='wybor')return;
+      if(r.ok&&r.gotowe){lista(o);return;}
+      if(!r.ok&&/wygasł/.test(r.error||'')){o.stan='blad';akt=null;o.sesja=null;blad(o,'Wybór zdjęć wygasł. Dotknij „Spróbuj jeszcze raz”.');return;}
+      if(r.ok&&+r.co>0)o.co=Math.max(2,Math.min(10,+r.co));
+      planuj(o,o.co*1000);
+    },function(){o.pyta=false;if(!o.zamkniete&&o.stan==='wybor')planuj(o,Math.max(5,o.co)*1000);});
+  }
+
+  function lista(o){
+    o.stan='lista';o.q('.otw').hidden=true;o.q('.nie').hidden=true;tekst(o,'Sprawdzam, co wybrano…');
+    zapytaj(o,{akcja:'zdjecia_lista',kod:o.s.kod||'',sesja:o.sesja}).then(function(r){
+      if(o.zamkniete)return;
+      var wsz=r.pozycje||[],zdj=wsz.filter(function(p){return p&&p.id&&p.rodzaj!=='VIDEO'&&/^image\//i.test(p.typ||'');});
+      o.filmy=wsz.length-zdj.length;
+      if(o.jedno)zdj=zdj.slice(0,1);
+      if(!zdj.length){o.stan='blad';akt=null;koniecSesji(o.sesja);o.sesja=null;blad(o,o.filmy?'Wybrano tylko filmy — tu potrzebne są zdjęcia.':'Nie wybrano żadnego zdjęcia.');return;}
+      pobierz(o,zdj);
+    },function(e){if(o.zamkniete)return;o.stan='blad';akt=null;blad(o,'Nie udało się odczytać wyboru: '+(((e&&e.message)||e)+'').replace(/\.$/,'')+'.');});
+  }
+
+  /* Pobieranie: 3 zdjęcia naraz (pasy), każde w częściach po 6 MB. Czas do końca: średni czas JEDNEGO zdjęcia
+     × liczba rund (pasy), odliczany od ostatniego gotowego zdjęcia; nieudane nie liczą się do pozostałych. */
+  function pobierz(o,lista){
+    o.stan='pobieram';o.pobieranie=true;
+    o.q('.znow').hidden=true;o.q('.urz2').hidden=true;o.q('.pas').hidden=false;
+    var n=lista.length,wyniki=new Array(n),postep=[],nast=0,gotowe=0,bledy=[],czasy=[],tOst=0,estOst=null;
+    for(var k=0;k<n;k++)postep.push(0);
+    function pokaz(){
+      if(o.zamkniete)return;
+      var suma=0;for(var k=0;k<n;k++)suma+=postep[k];
+      var pct=Math.min(100,Math.floor(suma/n*100)),zost=n-gotowe-bledy.length;
+      var sec=estOst===null?null:Math.max(0,estOst-(now()-tOst)/1000);
+      o.q('.pas i').style.width=pct+'%';
+      tekst(o,'Pobieram '+(o.jedno?'zdjęcie':'zdjęcia')+' ze Zdjęć Google: '+pct+'%');
+      var cz=sec===null?'czas policzę po pierwszym zdjęciu':sec<3?'jeszcze chwila':'do końca ok. '+PracowniaCzas.fmt(sec);
+      o.q('.czas').textContent=zost>0?pozost(zost)+' · '+cz:'';
+      if(zost>0)PracowniaCzas.show('zdjecia','Zdjęcia Google',sec,pozost(zost)+' · '+pct+'%');
+    }
+    function pas(){
+      if(o.zamkniete||nast>=n)return Promise.resolve();
+      var k=nast++,t0=now();
+      return pobierzJedno(o,lista[k],function(f){postep[k]=f;}).then(function(w){
+        wyniki[k]=w;postep[k]=1;gotowe++;czasy.push((now()-t0)/1000);
+        var sr=0;for(var i=0;i<czasy.length;i++)sr+=czasy[i];sr/=czasy.length;
+        estOst=sr*Math.ceil((n-gotowe-bledy.length)/PASY);tOst=now();pokaz();
+      },function(e){if(o.zamkniete)return;bledy.push({poz:lista[k],e:e});postep[k]=1;pokaz();}).then(pas);
+    }
+    pokaz();o.tik=setInterval(pokaz,1000);
+    var pasy=[];for(var p=0;p<Math.min(PASY,n);p++)pasy.push(pas());
+    Promise.all(pasy).then(function(){
+      clearInterval(o.tik);PracowniaCzas.hide('zdjecia');
+      if(o.zamkniete)return;
+      oddaj(o,lista,wyniki,bledy);
+    });
+  }
+
+  function pobierzJedno(o,poz,cb){
+    var czesci=[],od=0,pierwsza=null,odNowa=0;
+    function krok(){
+      if(o.zamkniete)return Promise.reject(new Error('anulowano'));
+      return zapytaj(o,{akcja:'zdjecia_pobierz',kod:o.s.kod||'',sesja:o.sesja,id:poz.id,od:od,ile:CZ}).then(function(r){
+        if(pierwsza&&r.suma!==pierwsza.suma){   /* zdjęcie zmieniło się między częściami — od nowa, raz */
+          if(++odNowa>1)throw new Error('zdjęcie zmieniało się w trakcie pobierania');
+          czesci=[];od=0;pierwsza=null;return krok();
+        }
+        if(!pierwsza)pierwsza=r;
+        var b=b64(r.dane||'');czesci.push(b);od+=b.length;
+        cb(pierwsza.rozmiar>0?Math.min(1,od/pierwsza.rozmiar):1);
+        if(od<pierwsza.rozmiar&&b.length)return krok();
+        if(od!==pierwsza.rozmiar)throw new Error('niepełne zdjęcie');
+        return {czesci:czesci,typ:pierwsza.typ||poz.typ,przerobione:!!pierwsza.przerobione,exif:pierwsza.exif||null};
+      });
+    }
+    return krok();
+  }
+
+  /* --- data i godzina w EXIF dla JPEG-a, który nie ma danych EXIF (HEIC zamieniony na JPEG, zdjęcie z komunikatora) --- */
+  function maExif(a){
+    var off=2,n=Math.min(a.length,1048576);
+    while(off+4<=n&&a[off]===0xFF){
+      var m=a[off+1];
+      if(m===0xDA||m===0xD9)break;
+      if(m===0x01||(m>=0xD0&&m<=0xD7)){off+=2;continue;}
+      var len=(a[off+2]<<8)|a[off+3];
+      if(m===0xE1&&off+10<=n&&a[off+4]===0x45&&a[off+5]===0x78&&a[off+6]===0x69&&a[off+7]===0x66&&a[off+8]===0&&a[off+9]===0)return true;
+      off+=2+len;
+    }
+    return false;
+  }
+  function czasLok(iso){
+    var t=Date.parse(iso||'');if(!t)return null;
+    var d=new Date(t),p=function(x){return (x<10?'0':'')+x;},m=-d.getTimezoneOffset();
+    return {data:d.getFullYear()+':'+p(d.getMonth()+1)+':'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()),
+            strefa:(m>=0?'+':'-')+p(Math.floor(Math.abs(m)/60))+':'+p(Math.abs(m)%60)};
+  }
+  function exifApp1(data,strefa){
+    var s1=String(data).slice(0,19)+'\0',s2=/^[+-]\d\d:\d\d$/.test(strefa||'')?strefa+'\0':'',ile=s2?2:1;
+    var ifd=26,dane=ifd+2+12*ile+4,dl=dane+s1.length+s2.length;dl+=dl&1;
+    var t=new Uint8Array(dl),v=new DataView(t.buffer);
+    t[0]=0x49;t[1]=0x49;v.setUint16(2,42,true);v.setUint32(4,8,true);
+    v.setUint16(8,1,true);v.setUint16(10,0x8769,true);v.setUint16(12,4,true);v.setUint32(14,1,true);v.setUint32(18,ifd,true);v.setUint32(22,0,true);
+    v.setUint16(ifd,ile,true);
+    var e=ifd+2;v.setUint16(e,0x9003,true);v.setUint16(e+2,2,true);v.setUint32(e+4,s1.length,true);v.setUint32(e+8,dane,true);
+    if(s2){e+=12;v.setUint16(e,0x9011,true);v.setUint16(e+2,2,true);v.setUint32(e+4,s2.length,true);v.setUint32(e+8,dane+s1.length,true);}
+    v.setUint32(ifd+2+12*ile,0,true);
+    for(var i=0;i<s1.length;i++)t[dane+i]=s1.charCodeAt(i);
+    for(var j=0;j<s2.length;j++)t[dane+s1.length+j]=s2.charCodeAt(j);
+    var seg=new Uint8Array(10+t.length),L=8+t.length;
+    seg[0]=0xFF;seg[1]=0xE1;seg[2]=L>>8;seg[3]=L&255;seg[4]=0x45;seg[5]=0x78;seg[6]=0x69;seg[7]=0x66;seg[8]=0;seg[9]=0;seg.set(t,10);
+    return seg;
+  }
+  function zData(czesci,w,poz){
+    var a=czesci[0];
+    if(!a||a.length<4||a[0]!==0xFF||a[1]!==0xD8||maExif(a))return null;   /* EXIF już jest — nie ruszamy (zostaje też obrót zdjęcia) */
+    var d=w.exif&&w.exif.data?{data:w.exif.data,strefa:w.exif.strefa||''}:czasLok(poz.czas);
+    if(!d)return null;
+    return [a.subarray(0,2),exifApp1(d.data,d.strefa),a.subarray(2)].concat(czesci.slice(1));
+  }
+
+  /* Pole pliku, które aplikacja w międzyczasie narysowała od nowa (np. Okładka przy zmianie stron), szukamy po id
+     albo po tych samych atrybutach data-… — inaczej zdjęcia trafiłyby do pola, którego już nie ma na stronie. */
+  function zywe(inp){
+    if(inp.isConnected!==false)return inp;
+    var doc=inp.ownerDocument,e=null;
+    if(inp.id){e=doc.getElementById(inp.id);if(e&&e.type==='file')return e;}
+    var at=[].filter.call(inp.attributes,function(a){return /^data-/.test(a.name);});
+    if(at.length){try{e=doc.querySelector('input[type="file"]'+at.map(function(a){return '['+a.name+'="'+String(a.value).replace(/["\\]/g,'\\$&')+'"]';}).join(''));}catch(x){e=null;}}
+    return e||inp;
+  }
+
+  /* Gotowe zdjęcia idą do pola pliku aplikacji — dokładnie tak, jak po wyborze z urządzenia. */
+  function oddaj(o,lista,wyniki,bledy){
+    var W=o.W,pliki=[];
+    for(var k=0;k<lista.length;k++){
+      var w=wyniki[k],poz=lista[k];if(!w)continue;
+      var typ=w.typ||poz.typ||'image/jpeg',nazwa=String(poz.nazwa||'').replace(/[\\\/:*?"<>|]+/g,'_')||('zdjecie-'+(k+1)+'.jpg');
+      if(w.przerobione||(/jpe?g/i.test(typ)&&!/\.jpe?g$/i.test(nazwa)))nazwa=nazwa.replace(/\.[A-Za-z0-9]{1,5}$/,'')+'.jpg';
+      var czesci=w.czesci;
+      if(/jpe?g/i.test(typ)){var z=zData(czesci,w,poz);if(z)czesci=z;}
+      var ts=Date.parse(poz.czas||'')||now();
+      try{pliki.push(new W.File(czesci,nazwa,{type:typ,lastModified:ts}));}catch(e){}
+    }
+    if(!pliki.length){
+      o.stan='blad';akt=null;
+      var pierwszy=bledy[0]&&bledy[0].e;
+      blad(o,'Nie udało się pobrać '+(o.jedno?'zdjęcia':'zdjęć')+(pierwszy?': '+((pierwszy.message||pierwszy)+'').replace(/\.$/,''):'')+'.');
+      return;
+    }
+    var dt=null,inp=zywe(o.inp);
+    try{dt=new W.DataTransfer();pliki.forEach(function(f){dt.items.add(f);});inp.files=dt.files;}catch(e){dt=null;}
+    if(!dt||!inp.files||inp.files.length!==pliki.length){o.stan='blad';akt=null;blad(o,'Ta przeglądarka nie pozwala przekazać zdjęć do aplikacji. Wybierz „Z urządzenia”.',true);return;}
+    o.pobieranie=false;zamknij(o);
+    try{inp.dispatchEvent(new W.Event('input',{bubbles:true}));}catch(e){}
+    try{inp.dispatchEvent(new W.Event('change',{bubbles:true}));}catch(e){}
+    var msg='Dodano '+zdjec(pliki.length)+' ze Zdjęć Google.';
+    if(bledy.length)msg+=' Nie udało się pobrać: '+bledy.slice(0,3).map(function(b){return b.poz.nazwa||'zdjęcie';}).join(', ')+(bledy.length>3?' i '+(bledy.length-3)+' innych':'')+'.';
+    if(o.filmy)msg+=' Pominięto '+filmow(o.filmy)+'.';
+    toast(msg);snd(bledy.length?'warn':'done');
+  }
+
+  function kopiuj(o){
+    var pole=o.q('.kop input'),st=o.q('.kopst'),nav=o.W.navigator;
+    try{pole.focus();pole.select();pole.setSelectionRange(0,pole.value.length);}catch(e){}
+    var reczne=function(){var ok=false;try{ok=o.doc.execCommand('copy');}catch(e){}st.textContent=ok?'Skopiowano. Wklej adres w przeglądarce.':'Adres jest zaznaczony — przytrzymaj go i wybierz „Kopiuj”.';};
+    try{if(nav.clipboard&&nav.clipboard.writeText){nav.clipboard.writeText(o.adres).then(function(){st.textContent='Skopiowano. Wklej adres w przeglądarce.';},reczne);return;}}catch(e){}
+    reczne();
+  }
+
+  return {wybor:wybor};
 })();
 
 /* ---------- budowa menu i przełącznika ---------- */
@@ -1102,7 +1461,7 @@ function go(id,fromHash){
   if(!fromHash){try{history.replaceState(null,'',current?'#'+current:location.pathname+location.search);}catch(e){}}
   render();
 }
-window.__PRACOWNIA={ev:ev,go:go,sounds:sndLog,czas:PracowniaCzas,cfgFor:MODELE.cfgFor,route:MODELE.route,seen:MODELE.seen,labels:MODELE.labels,offIds:MODELE.offList,modele:MODELE,wersja:WERSJA};
+window.__PRACOWNIA={ev:ev,go:go,zdjecia:ZDJ.wybor,sounds:sndLog,czas:PracowniaCzas,cfgFor:MODELE.cfgFor,route:MODELE.route,seen:MODELE.seen,labels:MODELE.labels,offIds:MODELE.offList,modele:MODELE,wersja:WERSJA};
 MODELE.check();
 setInterval(function(){MODELE.check();},10*60000);
 setTimeout(function(){WERSJA.check(true);},20000);
