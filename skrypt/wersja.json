@@ -1,0 +1,8 @@
+{
+  "wersja": 5,
+  "opis": "skrypt aktualizuje się sam z GitHuba (raz dziennie), bez komputera.",
+  "skrypt": "Dysk_Google_skrypt.gs",
+  "manifest": "appsscript.json",
+  "sha256Skrypt": "97c0c26bcea51983625c20ac9449eb74983e116a2947b839011d616c369b9187",
+  "sha256Manifest": "349b03d999674ebfec695b20a9ebe8fa5a913b5dc9113194fd7e90a549c83397"
+}
